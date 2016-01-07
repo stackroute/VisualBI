@@ -95,38 +95,38 @@
     }, 'json');
   });
 
-  $('.modal-footer #save').on('click', function(){
-    // console.log($('#cube option:selected').text());
-    var parameters = {
-                      xmlaServer: $('#url').val(),
-                      pathName: "/"+ $('#dataSource').val() + "/" + $('#catalog').val() + "/" + $('#cube option:selected').text()
-                    };
-    // console.log(parameters);
-    $('#left-menu-wrapper #cubeName').text($('#cube option:selected').text());
-    $.get('/discover/getDimensions', parameters, function(data) {
-      $('div#dim-div ul').children().remove();
-      data.values.forEach(function(item){
-       var li = generateLI(item.caption_name);
-       li.data('unique_name', item.unique_name);
-       li.data('path-name', parameters.pathName + "/" + item.unique_name);
-       if(item.caption_name !== "Measures") {
-         li.appendTo('div#dim-div ul');
-       }
-      });
-    }, 'json');
-    $.get('/discover/getMeasures', parameters, function(data) {
-      $('div#measures-div ul').children().remove();
-      data.values.forEach(function(item){
-       var li = $("<li><a href='#'>" + item.caption_name + "</a></li>");
-       li.data('unique_name', item.unique_name);
-       li.data('path-name', parameters.pathName + "/[Measures]/[Measures]/[Measures].[MeasuresLevel]/" + item.unique_name);
-         li.appendTo('div#measures-div ul').find('a').draggable({
-           appendTo: "body",
-           helper: "clone"
-         });
-      });
-    }, 'json');
-  });
+  // $('.modal-footer #save').on('click', function(){
+  //   // console.log($('#cube option:selected').text());
+  //   var parameters = {
+  //                     xmlaServer: $('#url').val(),
+  //                     pathName: "/"+ $('#dataSource').val() + "/" + $('#catalog').val() + "/" + $('#cube option:selected').text()
+  //                   };
+  //   // console.log(parameters);
+  //   $('#left-menu-wrapper #cubeName').text($('#cube option:selected').text());
+  //   $.get('/discover/getDimensions', parameters, function(data) {
+  //     $('div#dim-div ul').children().remove();
+  //     data.values.forEach(function(item){
+  //      var li = generateLI(item.caption_name);
+  //      li.data('unique_name', item.unique_name);
+  //      li.data('path-name', parameters.pathName + "/" + item.unique_name);
+  //      if(item.caption_name !== "Measures") {
+  //        li.appendTo('div#dim-div ul');
+  //      }
+  //     });
+  //   }, 'json');
+  //   $.get('/discover/getMeasures', parameters, function(data) {
+  //     $('div#measures-div ul').children().remove();
+  //     data.values.forEach(function(item){
+  //      var li = $("<li><a href='#'>" + item.caption_name + "</a></li>");
+  //      li.data('unique_name', item.unique_name);
+  //      li.data('path-name', parameters.pathName + "/[Measures]/[Measures]/[Measures].[MeasuresLevel]/" + item.unique_name);
+  //        li.appendTo('div#measures-div ul').find('a').draggable({
+  //          appendTo: "body",
+  //          helper: "clone"
+  //        });
+  //     });
+  //   }, 'json');
+  // });
 
   $('#dim-div, #measures-div').on('click', 'label', function() {
     if($(this).parent().children('ul').length === 0) {

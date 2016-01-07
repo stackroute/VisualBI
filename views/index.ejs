@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="hotChocolate">
   <head>
     <meta charset="utf-8">
     <title>Visual BI</title>
@@ -18,14 +18,14 @@
     <div class="container-fluid" id="main">
       <div class="row">
         <div class="col-xs-3" id= "left-menu">
-          <div id="left-menu-wrapper">
+          <div id="left-menu-wrapper" ng-controller="connectionController">
             <h4 id="cubeName">Select cube</h4>
             <div id="head-div">
               <!-- Button trigger modal -->
               <button type="button" class="btn btn-link" data-toggle="modal" data-target="#myModal">
                 Choose cube
               </button>
-              <!-- Modal -->
+              <!-- myModal -->
               <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
@@ -36,30 +36,34 @@
                     <div class="modal-body">
                       <p>
                         <label for="url">Server URL</label>
-                        <input type="search" name="url" id="url" value="http://172.23.238.252:8080/pentaho/Xmla%3fuserid=admin%26password=password">
+                        <input type="text" name="url" id="url" ng-model="connection.serverUrl">
                       </p>
                       <p>
                         <label for="dataSource">DataSource</label>
-                        <select class="dataSourceNameList" name="dataSource" id="dataSource">
-                          <option value="">select</option>
+                        <select class="dataSourceNameList" name="dataSource" id="dataSource" ng-model="connection.dataSource">
+                          <option ng-repeat="option in connection.dataSourceOptions" value="{{option}}">{{option}}</option>
                         </select>
                       </p>
                       <p>
                         <label for="catalog">Catalog</label>
-                        <select class="catalogNameList" name="catalog" id="catalog">
+                        <select class="catalogNameList" name="catalog" id="catalog" ng-model="connection.catalog">
                           <option value="">select</option>
                         </select>
                       </p>
                       <p>
                         <label for="cube">Cube</label>
-                        <select class="cubeNameList" name="cube" id="cube">
+                        <select class="cubeNameList" name="cube" id="cube" ng-model="connection.cube">
                           <option value="">select</option>
                         </select>
                       </p>
+                      Url - {{connection.serverUrl}} <br>
+                      DataSource - {{connection.dataSource}} <br>
+                      Catalog - {{connection.catalog}} <br>
+                      Cube - {{connection.cube}}
                     </div> <!-- modal-body end-->
                     <div class="modal-footer">
                       <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                      <button type="button" class="btn btn-primary" data-dismiss="modal" id="save">Save</button>
+                      <button type="button" class="btn btn-primary" data-dismiss="modal" id="save" ng-click="getDimensions(); getMeasures()">Save</button>
                     </div> <!-- modal-footer end -->
                   </div> <!-- modal-content end -->
                 </div> <!-- modal-dialog end -->
@@ -67,13 +71,22 @@
             </div> <!-- head-div end-->
             <h4>Dimensions</h4>
             <div id='dim-div'>
-              <!-- adding dimensions from json -->
-              <ul class='nav nav-list-main dimensions'></ul>
+              <ul class='nav nav-list-main dimensions'>
+                <li ng-repeat="dimension in dimensions" ng-if="dimension.caption_name !== 'Measures'" data-caption_name="{{dimension.caption_name}}" data-unique_name="{{dimension.unique_name}}">
+                  <label class='nav-toggle nav-header'>
+                    <span class='nav-toggle-icon glyphicon glyphicon-chevron-right'></span>
+                    <a href='#'> {{dimension.caption_name}}</a>
+                  </label>
+                </li>
+              </ul>
             </div>
             <h4>Measures</h4>
             <div id="measures-div">
-              <!-- adding measures from json -->
-              <ul class='nav nav-list-main measures'></ul>
+              <ul class='nav nav-list-main measures'>
+                <li ng-repeat="measure in measures" data-caption_name="{{measure.caption_name}}" data-unique_name="{{measure.unique_name}}">
+                    <a href='#'> {{measure.caption_name}}</a>
+                </li>
+              </ul>
             </div>
           </div> <!-- left-menu-wrapper end-->
         </div> <!-- left-menu end-->
@@ -100,37 +113,18 @@
               <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-download-alt"></span></button>
             </div>
           </div> <!-- navbar-end -->
-          <div id="content-wrapper">
-            <div class="row myRect">
+          <div id="content-wrapper" ng-controller="headerController">
+            <div class="row myRect" ng-repeat="header in headings">
               <div class="col-xs-2">
-                <h4>Columns</h4>
+                <h4>{{header}}</h4>
               </div>
               <div class="col-xs-10 columns">
                 <ul class="nav">
-                  <li class="placeholder">Drag measures/dimensions here</li>
+                  <li class="placeholder">{{defaultMessage}}</li>
                 </ul>
               </div> <!-- col-xs-10 end-->
             </div> <!-- myRect end-->
-            <div class="row myRect">
-              <div class="col-xs-2">
-                <h4>Rows</h4>
-              </div>
-              <div class="col-xs-10 columns">
-                <ul class="nav">
-                  <li class="placeholder">Drag measures/dimensions here</li>
-                </ul>
-              </div> <!-- col-xs-10 end-->
-            </div> <!-- myRect end-->
-            <div class="row myRect">
-              <div class="col-xs-2">
-                <h4>Filters</h4>
-              </div>
-              <div class="col-xs-10 columns">
-                <ul class="nav">
-                  <li class="placeholder">Drag measures/dimensions here</li>
-                </ul>
-              </div> <!-- col-xs-10 end-->
-            </div> <!-- myRect end-->
+
             <div class="row">
               <div class="col-xs-12">
                 <button class="btn btn-info btn-lg" id="executeButton">Execute</button>
@@ -171,6 +165,9 @@
       </div> <!-- row end-->
     </div> <!--container main end -->
 
+  <!-- angular-->
+  <script type="text/javascript" src="/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="/app.js"></script>
   <!-- jquery -->
   <script src="js/jquery-2.1.4.js"></script>
 
