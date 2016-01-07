@@ -3,6 +3,10 @@ var app = angular.module('hotChocolate',[]);
 app.controller('headerController', function($scope) {
   $scope.headings = ['Columns', 'Rows', 'Filters'];
   $scope.defaultMessage = "Drag measures/dimensions here";
+  $scope.list = [];
+  $scope.hideMe = function() {
+    return $scope.list.length > 0;
+  };
 });
 
 app.controller('connectionController', function($scope, $http) {
@@ -11,7 +15,9 @@ app.controller('connectionController', function($scope, $http) {
     dataSource: "",
     dataSourceOptions: [],
     catalog: "",
-    cube: ""
+    catalogOptions: [],
+    cube: "",
+    cubeOptions: []
   };
 
   $scope.dimensions = [];
@@ -21,7 +27,7 @@ app.controller('connectionController', function($scope, $http) {
     $http.get('/discover/getDimensions', {
       params: {
         xmlaServer: $scope.connection.serverUrl,
-        pathName: "/"+ $scope.connection.dataSource + "/" + $scope.connection.catalog + "/" + $scope.connection.cube + " Analysis"
+        pathName: "/"+ $scope.connection.dataSource + "/" + $scope.connection.catalog + "/" + $scope.connection.cube
       }
     }).success(function(data) {
       $scope.dimensions = data.values;
@@ -32,10 +38,32 @@ app.controller('connectionController', function($scope, $http) {
     $http.get('/discover/getMeasures', {
       params: {
         xmlaServer: $scope.connection.serverUrl,
-        pathName: "/"+ $scope.connection.dataSource + "/" + $scope.connection.catalog + "/" + $scope.connection.cube + " Analysis"
+        pathName: "/"+ $scope.connection.dataSource + "/" + $scope.connection.catalog + "/" + $scope.connection.cube
       }
     }).success(function(data) {
       $scope.measures = data.values;
+    });
+  };
+
+  $scope.getCatalog = function() {
+    $http.get('/discover/getServerDetails', {
+      params: {
+        xmlaServer: $scope.connection.serverUrl,
+        pathName: "/" + $scope.connection.dataSource
+      }
+    }).success(function(data) {
+      $scope.connection.catalogOptions = data.values;
+    });
+  };
+
+  $scope.getCube = function() {
+    $http.get('/discover/getServerDetails', {
+      params: {
+        xmlaServer: $scope.connection.serverUrl,
+        pathName: "/" + $scope.connection.dataSource + "/" + $scope.connection.catalog
+      }
+    }).success(function(data) {
+      $scope.connection.cubeOptions = data.values;
     });
   };
 });

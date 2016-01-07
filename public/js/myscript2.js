@@ -63,29 +63,29 @@
     }
   });
 
-  $('#myModal #dataSource').on('change', function() {
-    var parameters = {xmlaServer: $('#url').val(), pathName: "/"+$(this).val()};
-    $.get('/discover/getServerDetails', parameters, function(data) {
-      $('#myModal #catalog').children().remove();
-      $('#myModal #catalog').append($("<option>select</option>"));
-      data.values.forEach(function(item){
-       var option = $("<option value=" +  item.caption_name + ">" + item.caption_name + "</option>");
-       $('#myModal select.catalogNameList').append(option);
-      });
-    }, 'json');
-  });
-
-  $('#myModal #catalog').on('change', function() {
-    var parameters = {xmlaServer: $('#url').val(), pathName: "/"+ $('#dataSource').val() + "/" + $(this).val()};
-    $.get('/discover/getServerDetails', parameters, function(data) {
-      $('#myModal #cube').children().remove();
-      $('#myModal #cube').append($("<option>select</option>"));
-      data.values.forEach(function(item){
-       var option = $("<option value=" +  item.caption_name + ">" + item.caption_name + "</option>");
-       $('#myModal select.cubeNameList').append(option);
-      });
-    }, 'json');
-  });
+  // $('#myModal #dataSource').on('change', function() {
+  //   var parameters = {xmlaServer: $('#url').val(), pathName: "/"+$(this).val()};
+  //   $.get('/discover/getServerDetails', parameters, function(data) {
+  //     $('#myModal #catalog').children().remove();
+  //     $('#myModal #catalog').append($("<option>select</option>"));
+  //     data.values.forEach(function(item){
+  //      var option = $("<option value=" +  item.caption_name + ">" + item.caption_name + "</option>");
+  //      $('#myModal select.catalogNameList').append(option);
+  //     });
+  //   }, 'json');
+  // });
+  //
+  // $('#myModal #catalog').on('change', function() {
+  //   var parameters = {xmlaServer: $('#url').val(), pathName: "/"+ $('#dataSource').val() + "/" + $(this).val()};
+  //   $.get('/discover/getServerDetails', parameters, function(data) {
+  //     $('#myModal #cube').children().remove();
+  //     $('#myModal #cube').append($("<option>select</option>"));
+  //     data.values.forEach(function(item){
+  //      var option = $("<option value=" +  item.caption_name + ">" + item.caption_name + "</option>");
+  //      $('#myModal select.cubeNameList').append(option);
+  //     });
+  //   }, 'json');
+  // });
 
   // $('.modal-footer #save').on('click', function(){
   //   // console.log($('#cube option:selected').text());

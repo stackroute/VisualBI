@@ -40,20 +40,20 @@
                       </p>
                       <p>
                         <label for="dataSource">DataSource</label>
-                        <select class="dataSourceNameList" name="dataSource" id="dataSource" ng-model="connection.dataSource">
+                        <select class="dataSourceNameList" name="dataSource" id="dataSource" ng-model="connection.dataSource" ng-change="getCatalog()">
                           <option ng-repeat="option in connection.dataSourceOptions" value="{{option}}">{{option}}</option>
                         </select>
                       </p>
                       <p>
                         <label for="catalog">Catalog</label>
-                        <select class="catalogNameList" name="catalog" id="catalog" ng-model="connection.catalog">
-                          <option value="">select</option>
+                        <select class="catalogNameList" name="catalog" id="catalog" ng-model="connection.catalog" ng-change="getCube()">
+                          <option ng-repeat="option in connection.catalogOptions" value="{{option.caption_name}}">{{option.caption_name}}</option>
                         </select>
                       </p>
                       <p>
                         <label for="cube">Cube</label>
                         <select class="cubeNameList" name="cube" id="cube" ng-model="connection.cube">
-                          <option value="">select</option>
+                          <option ng-repeat="option in connection.cubeOptions" value="{{option.caption_name}}">{{option.caption_name}}</option>
                         </select>
                       </p>
                       Url - {{connection.serverUrl}} <br>
@@ -83,7 +83,7 @@
             <h4>Measures</h4>
             <div id="measures-div">
               <ul class='nav nav-list-main measures'>
-                <li ng-repeat="measure in measures" data-caption_name="{{measure.caption_name}}" data-unique_name="{{measure.unique_name}}">
+                <li ng-repeat="measure in measures" ng-model="measures" data-drag="true" data-jqyoui-options="{appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{animate: 'true', placeholder: 'keep'}" data-caption_name="{{measure.caption_name}}" data-unique_name="{{measure.unique_name}}">
                     <a href='#'> {{measure.caption_name}}</a>
                 </li>
               </ul>
@@ -128,8 +128,9 @@
                 <h4>{{header}}</h4>
               </div>
               <div class="col-xs-10 columns">
-                <ul class="nav">
-                  <li class="placeholder">{{defaultMessage}}</li>
+                <ul class="nav" data-drop="true" jqyoui-droppable="{multiple:true}">
+                  <li ng-repeat="item in list" ng-show="item.title" data-drag="true" data-jqyoui-options="{revert: 'invalid', helper: 'clone'}" ng-model="list4" jqyoui-draggable="{index: {{$index}},animate:true}">{{item.title}}</li>
+                  <li class="placeholder" ng-hide="hideMe()">{{defaultMessage}}</li>
                 </ul>
               </div> <!-- col-xs-10 end-->
             </div> <!-- myRect end-->
@@ -203,7 +204,6 @@
 
     <!-- angular-->
     <script type="text/javascript" src="/lib/angular/angular.js"></script>
-    <script type="text/javascript" src="/app.js"></script>
 
     <!-- jquery -->
     <script src="js/jquery-2.1.4.js"></script>
@@ -213,6 +213,12 @@
 
     <!-- Bootstrap JS -->
     <script src="bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- angular-dragdrop -->
+    <script src="/lib/angular-dragdrop/src/angular-dragdrop.min.js"></script>
+
+    <!-- app.js-->
+    <script type="text/javascript" src="/app.js"></script>
 
     <!-- implementing grid -->
     <script src="js/gridRendering.js"></script>
