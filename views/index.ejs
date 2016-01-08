@@ -9,7 +9,7 @@
 		<!-- Bootstrap CSS -->
 		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 		<!-- Custom CSS -->
-		<link href="css/mystyles2.css" rel="stylesheet">
+		<link href="stylesheets/style.css" rel="stylesheet">
 
 		<!-- Include Modernizr in the head, before any other Javascript -->
 		<script src="js/modernizr-2.6.2.min.js"></script>
@@ -42,18 +42,21 @@
                         <label for="dataSource">DataSource</label>
                         <select class="dataSourceNameList" name="dataSource" id="dataSource" ng-model="connection.dataSource" ng-change="getCatalog()">
                           <option ng-repeat="option in connection.dataSourceOptions" value="{{option}}">{{option}}</option>
+                          <option value=""> ---select---</option>
                         </select>
                       </p>
                       <p>
                         <label for="catalog">Catalog</label>
                         <select class="catalogNameList" name="catalog" id="catalog" ng-model="connection.catalog" ng-change="getCube()">
                           <option ng-repeat="option in connection.catalogOptions" value="{{option.caption_name}}">{{option.caption_name}}</option>
+                          <option value=""> ---select---</option>
                         </select>
                       </p>
                       <p>
                         <label for="cube">Cube</label>
                         <select class="cubeNameList" name="cube" id="cube" ng-model="connection.cube">
                           <option ng-repeat="option in connection.cubeOptions" value="{{option.caption_name}}">{{option.caption_name}}</option>
+                          <option value=""> ---select---</option>
                         </select>
                       </p>
                       Url - {{connection.serverUrl}} <br>
@@ -73,24 +76,45 @@
             <div id='dim-div'>
               <ul class='nav nav-list-main dimensions'>
                 <li ng-repeat="dimension in dimensions" ng-if="dimension.caption_name !== 'Measures'" data-caption_name="{{dimension.caption_name}}" data-unique_name="{{dimension.unique_name}}">
-                  <label class='nav-toggle nav-header'>
+                  <label class='nav-toggle nav-header' ng-click="!dimension.children.length > 0 && getHierarchies(dimension.unique_name)">
                     <span class='nav-toggle-icon glyphicon glyphicon-chevron-right'></span>
                     <a href='#'> {{dimension.caption_name}}</a>
                   </label>
+                  <ul class='nav nav-list nav-left-ml'>
+                    <li ng-repeat="hierarchy in dimension.children" data-caption_name="{{hierarchy.caption_name}}" data-unique_name="{{hierarchy.unique_name}}">
+                      <label class='nav-toggle nav-header' ng-click="!hierarchy.children.length > 0 && getLevels(dimension.unique_name,hierarchy.unique_name)">
+                        <span class='nav-toggle-icon glyphicon glyphicon-chevron-right'></span>
+                        <a href='#' ng-model="dimension.children" data-drag="true" data-jqyoui-options="{revert: 'invalid', appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{index: {{$index}}, animate: 'true', placeholder: 'keep'}"> {{hierarchy.caption_name}}</a>
+                      </label>
+                      <ul class='nav nav-list nav-left-ml'>
+                        <li ng-repeat="level in hierarchy.children" data-caption_name="{{level.caption_name}}" data-unique_name="{{level.unique_name}}">
+                          <label class='nav-toggle nav-header' ng-click="!level.children.length > 0 && getMembers(dimension.unique_name, hierarchy.unique_name, level.unique_name)">
+                            <span class='nav-toggle-icon glyphicon glyphicon-chevron-right'></span>
+                            <a href='#' ng-model="hierarchy.children" data-drag="true" data-jqyoui-options="{revert: 'invalid', appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{index: {{$index}}, animate: 'true', placeholder: 'keep'}"> {{level.caption_name}}</a>
+                          </label>
+                          <ul class='nav nav-list nav-left-ml'>
+                            <li ng-repeat="member in level.children" data-caption_name="{{member.caption_name}}" data-unique_name="{{member.unique_name}}">
+                              <a href='#' ng-model="level.children" data-drag="true" data-jqyoui-options="{revert: 'invalid', appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{index: {{$index}}, animate: 'true', placeholder: 'keep'}"> {{member.caption_name}}</a>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </div>
             <h4>Measures</h4>
             <div id="measures-div">
               <ul class='nav nav-list-main measures'>
-                <li ng-repeat="measure in measures" ng-model="measures" data-drag="true" data-jqyoui-options="{appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{animate: 'true', placeholder: 'keep'}" data-caption_name="{{measure.caption_name}}" data-unique_name="{{measure.unique_name}}">
-                    <a href='#'> {{measure.caption_name}}</a>
+                <li ng-repeat="measure in measures"  data-caption_name="{{measure.caption_name}}" data-unique_name="{{measure.unique_name}}">
+                    <a href='#' ng-model="measures" data-drag="true" data-jqyoui-options="{revert: 'invalid', appendTo: 'body', helper: 'clone'}" jqyoui-draggable="{index: {{$index}}, animate: 'true', placeholder: 'keep'}"> {{measure.caption_name}}</a>
                 </li>
               </ul>
             </div>
           </div> <!-- left-menu-wrapper end-->
         </div> <!-- left-menu end-->
-        <div class="col-xs-8" id="content">
+        <div class="col-xs-8" id="content" ng-controller="queryController">
           <div class="navbar navbar-fixed-top">
             <div class="btn-group" role="group">
               <!-- save query button-->
@@ -122,15 +146,17 @@
               <button type="button" class="btn btn-default navbar-btn"><span class="glyphicon glyphicon-download-alt"></span></button>
             </div>
           </div> <!-- navbar-end -->
-          <div id="content-wrapper" ng-controller="headerController">
-            <div class="row myRect" ng-repeat="header in headings">
+          <div id="content-wrapper">
+            <div class="row myRect" ng-repeat="item in items">
               <div class="col-xs-2">
-                <h4>{{header}}</h4>
+                <h4>{{item.label}}</h4>
               </div>
               <div class="col-xs-10 columns">
-                <ul class="nav" data-drop="true" jqyoui-droppable="{multiple:true}">
-                  <li ng-repeat="item in list" ng-show="item.title" data-drag="true" data-jqyoui-options="{revert: 'invalid', helper: 'clone'}" ng-model="list4" jqyoui-draggable="{index: {{$index}},animate:true}">{{item.title}}</li>
-                  <li class="placeholder" ng-hide="hideMe()">{{defaultMessage}}</li>
+                <ul class="nav" data-drop="true" ng-model="item.list" jqyoui-droppable="{multiple:true}">
+                  <li ng-repeat="elem in item.list track by $index" ng-show="elem.caption_name">
+                    {{elem.caption_name}}<button type='button' class='close'>&times;</button>
+                  </li>
+                  <li class="placeholder" ng-hide="hideMe(item.list)">Drag measures/dimensions here</li>
                 </ul>
               </div> <!-- col-xs-10 end-->
             </div> <!-- myRect end-->
@@ -206,10 +232,10 @@
     <script type="text/javascript" src="/lib/angular/angular.js"></script>
 
     <!-- jquery -->
-    <script src="js/jquery-2.1.4.js"></script>
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
 
     <!-- jquery-ui -->
-    <script src="js/jquery-ui.min.js"></script>
+    <script src="/lib/jquery-ui/jquery-ui.min.js"></script>
 
     <!-- Bootstrap JS -->
     <script src="bootstrap/js/bootstrap.min.js"></script>

@@ -120,32 +120,32 @@
   //   }, 'json');
   // });
 
-  $('#dim-div, #measures-div').on('click', 'label', function() {
-    if($(this).parent().children('ul').length === 0) {
-      var parameters = {xmlaServer: $('#url').val(), pathName: $(this).parent().data('path-name')};
-      var childUL = generateUL();
-      childUL.appendTo($(this).parent()).toggle();
-      $.get('/discover/getDimensions', parameters, function(data) {
-        var level = data.key;
-        var li;
-        data.values.forEach(function(item){
-         if(level == "MEMBER") {
-            li = $("<li><a href='#'>" + item.caption_name + "</a></li>");
-
-         } else {
-            li = generateLI(item.caption_name);
-         }
-         li.appendTo(childUL).find('a').draggable({
-           appendTo: "body",
-           helper: "clone"
-         });
-         li.data('unique_name', item.unique_name);
-         li.data('caption_name', item.caption_name);
-         li.data('path-name', parameters.pathName + "/" + item.unique_name);
-        });
-      }, 'json');
-    }
-  });
+  // $('#dim-div, #measures-div').on('click', 'label', function() {
+  //   if($(this).parent().children('ul').length === 0) {
+  //     var parameters = {xmlaServer: $('#url').val(), pathName: $(this).parent().data('path-name')};
+  //     var childUL = generateUL();
+  //     childUL.appendTo($(this).parent()).toggle();
+  //     $.get('/discover/getDimensions', parameters, function(data) {
+  //       var level = data.key;
+  //       var li;
+  //       data.values.forEach(function(item){
+  //        if(level == "MEMBER") {
+  //           li = $("<li><a href='#'>" + item.caption_name + "</a></li>");
+  //
+  //        } else {
+  //           li = generateLI(item.caption_name);
+  //        }
+  //        li.appendTo(childUL).find('a').draggable({
+  //          appendTo: "body",
+  //          helper: "clone"
+  //        });
+  //        li.data('unique_name', item.unique_name);
+  //        li.data('caption_name', item.caption_name);
+  //        li.data('path-name', parameters.pathName + "/" + item.unique_name);
+  //       });
+  //     }, 'json');
+  //   }
+  // });
 
   $('#dim-div,#measures-div').on('click', 'label' , function () {
     $this = $(this).children('span');
