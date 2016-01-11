@@ -159,45 +159,45 @@
     }
   });
 
-  $('#executeButton').on('click', function() {
-    //build mdx query from dragged items
-    jsondata(mdxGenerator());
-  });
-
-  function mdxGenerator() {
-    var colItems = $('div.columns:eq(0)').find('li'),
-        rowItems = $('div.columns:eq(1)').find('li'),
-        filterItems = $('div.columns:eq(2)').find('li');
-
-    var mdxQuery,
-        col_query = "{}",
-        row_query = "{}",
-        filter_query = "{}";
-
-    //console.log(colItems.eq(0).data('caption_name'));
-    //console.log("awrgaw");
-    if(colItems.eq(0).data('caption_name') !== undefined) {
-      colItems.each(function(index, value) {
-          if($(this).data('is_member') === "yes") {
-            col_query = "UNION(" + "{" + $(this).data('unique_name') + "}," + col_query + ")";
-          } else {
-            col_query = "UNION(" + $(this).data('unique_name') + ".members," + col_query + ")";
-          }
-      });
-    }
-    if(rowItems.eq(0).data('caption_name') !== undefined) {
-      rowItems.each(function(index, value) {
-        if($(this).data('is_member') === "yes") {
-          row_query = "UNION(" + "{" + $(this).data('unique_name') + "}," + row_query + ")";
-        } else {
-          row_query = "UNION(" + $(this).data('unique_name') + ".members," + row_query + ")";
-        }
-      });
-    }
-    mdxQuery = "select " + col_query + " on columns, " + row_query + " on rows" + " from [Quadrant Analysis]" ;
-    console.log(mdxQuery);
-    return mdxQuery;
-  }
+  // $('#executeButton').on('click', function() {
+  //   //build mdx query from dragged items
+  //   jsondata(mdxGenerator());
+  // });
+  //
+  // function mdxGenerator() {
+  //   var colItems = $('div.columns:eq(0)').find('li'),
+  //       rowItems = $('div.columns:eq(1)').find('li'),
+  //       filterItems = $('div.columns:eq(2)').find('li');
+  //
+  //   var mdxQuery,
+  //       col_query = "{}",
+  //       row_query = "{}",
+  //       filter_query = "{}";
+  //
+  //   //console.log(colItems.eq(0).data('caption_name'));
+  //   //console.log("awrgaw");
+  //   if(colItems.eq(0).data('caption_name') !== undefined) {
+  //     colItems.each(function(index, value) {
+  //         if($(this).data('is_member') === "yes") {
+  //           col_query = "UNION(" + "{" + $(this).data('unique_name') + "}," + col_query + ")";
+  //         } else {
+  //           col_query = "UNION(" + $(this).data('unique_name') + ".members," + col_query + ")";
+  //         }
+  //     });
+  //   }
+  //   if(rowItems.eq(0).data('caption_name') !== undefined) {
+  //     rowItems.each(function(index, value) {
+  //       if($(this).data('is_member') === "yes") {
+  //         row_query = "UNION(" + "{" + $(this).data('unique_name') + "}," + row_query + ")";
+  //       } else {
+  //         row_query = "UNION(" + $(this).data('unique_name') + ".members," + row_query + ")";
+  //       }
+  //     });
+  //   }
+  //   mdxQuery = "select " + col_query + " on columns, " + row_query + " on rows" + " from [Quadrant Analysis]" ;
+  //   console.log(mdxQuery);
+  //   return mdxQuery;
+  // }
 
   $('#saveQueryModal #saveQueryButton').on('click', function() {
 
