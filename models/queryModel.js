@@ -8,12 +8,12 @@ var querySchema = new mongoose.Schema({
   onColumns: [{
               unique_name: String,
               caption_name: String,
-              is_member: String
+              isMember: String
              }],
   onRows: [{
            unique_name: String,
            caption_name: String,
-           is_member: String
+           isMember: String
           }],
   onFilters: [String],
   queryMDX: String,
