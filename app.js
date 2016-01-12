@@ -1,16 +1,21 @@
-var express = require('express'),
-    db = require('./models/db'),
-    path = require('path'),
-    favicon = require('serve-favicon'),
-    logger = require('morgan'),
-    cookieParser = require('cookie-parser'),
-    bodyParser = require('body-parser'),
-    execute = require('./routes/execute_query'),
-    discover = require('./routes/discover'),
-    queryController = require('./routes/queryController'),
-    routes = require('./routes/index'),
-    users = require('./routes/users');
+// Express modules
+var express       = require('express'),
+    path          = require('path'),
+    logger        = require('morgan'),
+    favicon       = require('serve-favicon'),
+    cookieParser  = require('cookie-parser'),
+    bodyParser    = require('body-parser');
 
+// Developer defined modules
+var  db                = require('./models/db'),
+    execute            = require('./routes/execute_query'),
+    discover           = require('./routes/discover'),
+    queryController    = require('./routes/queryController'),
+    routes             = require('./routes/index'),
+    users              = require('./routes/users'),
+    serverCredentials  = require('./routes/serverCredentials');
+
+// initializing express application
 var app = express();
 
 // view engine setup
@@ -25,14 +30,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Routing
 app.use('/', routes);
 app.use('/users', users);
 app.use('/execute', execute);
 app.use('/discover', discover);
+app.use('/serverCredentials', serverCredentials);
 app.use('/query', queryController);
-// app.use('/get_serverDetails', discover.getDimensions);
-// app.use('/get_children', discover.getDimensions);
-// app.use('/get_measures',discover.getMeasures);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -64,6 +68,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;

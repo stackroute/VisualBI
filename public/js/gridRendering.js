@@ -1,20 +1,23 @@
-/******** AJAX Request for getting json data from response ***********/
+/*******************   Necessary Imports    *****************************/
+// var render = require('./renderBarChart.js');
 
-function jsondata(mdxQuery){
+/******** AJAX Request for getting json data from response ***********/
+var graphArray = [];
+function jsondata(query){
   $( "#dataTableBody tr" ).replaceWith( "" );
   $.post(
       "/execute",
-      { url: "http://172.23.238.252:8080/pentaho/Xmla?userid=admin&password=password",
-        dataSource: "Pentaho",
-        catalog: "SampleData",
-        statement: mdxQuery
+      { username : query.username,
+        dataSource : query.dataSource,
+        catalog: query.catalog,
+        statement: query.mdxQuery
         // statement: "select NON EMPTY ([Department].[All Departments]) on columns, NON EMPTY {[Measures].[Actual]} on ROWS from [Quadrant Analysis]"
         // statement: "select NON EMPTY UNION([Department].members,{}) on columns, NON EMPTY {[Measures].[Actual], [Measures].[Budget]} on ROWS from [Quadrant Analysis]"
         // statement: "select NON EMPTY {[Measures].[Actual],[Measures].[Budget]} ON COLUMNS, "+
         //             "NON EMPTY Crossjoin(Union({[Region].[All Regions]},{[Region].[All Regions].Children}),"+
         //                 " Crossjoin(Hierarchize(Union({[Department].[All Departments]}, "+
         //                   "[Department].[All Departments].Children)),Union({[Positions].[All Positions]},"+
-        //                       " {[Positions].[All Positions].Children}))) ON ROWS from [Quadrant Analysis]"
+        //                       "{[Positions].[All Positions].Children}))) ON ROWS from [Quadrant Analysis]"
       }
     ).done(function( data ) {
         renderData(data);
@@ -29,6 +32,19 @@ function renderData(data){
       axis0 = axis[0],
       axis1 = axis[1];
 
+      /************* Function for graphKey *****************/
+
+      var axis0Names = [];
+      for (var index0 in axis0){
+         var axis0Member = axis0[index0].Member;
+         var axis0Name = '';
+         for(var memIndex0 in axis0Member){
+           axis0Name = axis0Name+axis0Member[memIndex0].Caption+".";
+         }
+         axis0Name = axis0Name.substring(0,axis0Name.length-1);
+         axis0Names.push(axis0Name);
+       }
+      //  console.log(axis0Names);
 /************************ Generating tree structure *************************************/
       addElement = function(members, tree, level) {
         var child;
@@ -46,12 +62,15 @@ function renderData(data){
         }
         return tree;
         };
-
+/************************************** Graph Arrays *****************************************/
+// var graphArray = [];
+var graphKey = [];
 /****************************** Axis0 Hierarchical Structure **********************************/
 
         axis0Child = axis0.reduce((function(acc, member) {
         return addElement(member.Member, acc, 1);
         }), {});
+
         /************* Function for rendering axis0 *****************/
         tdAxis0Child = function(element) {
           var a, ele, name,
@@ -107,22 +126,26 @@ function renderData(data){
       val.push(valObj);
     }
     var count  = 0,
-        dataArray = [];
+        dataArray = [],
+        graphData = [];
     for (var j = 0, len1 = axis1.length; j < len1; j++) {
       td='';
-      var axis1Member = axis1[j].Member;
-      var axis1Name = '';
-      for(var memIndex1 in axis1Member){
-        axis1Name = axis1Name+axis1Member[memIndex1].Caption+".";
-      }
       var tempDataObj = {};
+      var graphInnerArray = [];
       for (var i = 0, len = axis0.length; i < len; i++) {
+        var graphObj = {};
+        graphObj.key = axis0Names[i];
+        graphObj.value = parseFloat(val[count].value.replace(/,/g,''));
+        graphInnerArray.push(graphObj);
         td += "<td>"+val[count].value+"</td>";
         count++;
       }
       tempDataObj.td = td;
       dataArray.push(tempDataObj);
+      graphArray.push(graphInnerArray);
     }
+    // console.log(graphArray);
+    // graphArray is for D3.js part.
 
 /****************************** Axis1 Hierarchical Structure **********************************/
 
@@ -132,6 +155,7 @@ function renderData(data){
     var elementIndex = 0;
 
     /************* Function for rendering axis1 *****************/
+    var rowId = 0;
     tdAxis1Child = function(element) {
       var a, ele, name;
       if (Object.keys(element).length === 0) {
@@ -143,11 +167,12 @@ function renderData(data){
         for (name in element) {
           ele = element[name];
           if(Object.keys(ele.children).length === 0){
-            results.push(("<tr><td rowspan='" + ele.count + "' class='level" + ele.level + "'>" + name + "</td>")+dataArray[elementIndex].td);
+            results.push(("<tr id='row"+rowId+"' class='dataRow'><td rowspan='" + ele.count + "' class='level" + ele.level + "'>" + name + "</td>")+dataArray[elementIndex].td);
             elementIndex += 1;
+            rowId += 1;
           }
           else{
-            results.push(("<tr><td rowspan='" + ele.count + "' class='level" + ele.level + "'>" + name + "</td>") + tdAxis1Child(ele.children));
+            results.push(("<tr id='row"+rowId+"' class='dataRow'><td rowspan='" + ele.count + "' class='level" + ele.level + "'>" + name + "</td>") + tdAxis1Child(ele.children));
           }
         }
         return results;
@@ -158,6 +183,21 @@ function renderData(data){
     }
   };
   var template1 = $.trim($("#axis1_insersion").html());
-  var frag1 = template1.replace(/{{axis1}}/ig,"<tr>"+tdAxis1Child(axis1Child));
+  var frag1 = template1.replace(/{{axis1}}/ig,"<tr id='row0' class='dataRow'>"+tdAxis1Child(axis1Child));
   $('#dataTableBody').append(frag1);
 }
+
+  $(".graph").on("click",function(){
+    // $(".graphColumn").toggle();
+    if(($("."+this.id+"").length) === 0){
+    $("#row0").prev().append("<td class="+this.id+"><span class='graphIcon'>"+this.id+"</span></td>");
+    $(".dataRow").append("<td class="+this.id+"><span class='graphIcon'></span></td>");
+
+    for(var index in graphArray) {
+      renderChart(graphArray[index],'#row'+index+ ' '+'td.'+this.id + ' ' +'span.graphIcon');
+    }
+  }
+  else{
+    $("."+this.id+"").toggle();
+  }
+  });
