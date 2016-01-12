@@ -11,13 +11,35 @@ app.controller('queryController', function($scope, $http) {
                     label: 'Filters',
                     list: []
                   }];
+
+  $scope.deleteItem = function(childIndex, parentIndex) {
+    $scope.items[parentIndex].list.splice(childIndex, 1);
+  };
+  $scope.queryList = [];
+  $scope.querySaveMessage = "";
+  $scope.showModalAlert = false;
+
   $scope.hideMe = function(list) {
     return list.length > 0;
   };
 
   $scope.mdxQuery = "";
-  $scope.executeQueryData = [];
+  $scope.executeQueryData = {};
+  $scope.newQueryName = "";
 
+  $http.get('/query/byUser', {
+    params: {
+      userName: 'Batman'
+    }
+  }).success(function(data) {
+      if(data.length > 0) {
+        if (data.status && data.status === 'error') {
+          console.log(data.error);
+        } else {
+          $scope.queryList = data;
+        }
+      }
+  });
 });
 
 app.controller('connectionController', function($scope, $http) {
@@ -324,3 +346,70 @@ app.directive('gridRender', function($http) {
     } // end link
   }; // end return
 }); // end  directive
+
+app.directive('saveQuery', function($http) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      element.on('click', function() {
+        var colArray = [],
+            rowArray = [],
+            filterArray = [];
+        for(var i=0; i < 2; i++) {
+          var dragItems = scope.items[i].list;
+          var len = dragItems.length;
+          if(len > 0) {
+            for(var j=0; j < len; j++) {
+              if (i == 0) { colArray.push(dragItems[j]); }
+              else { rowArray.push(dragItems[j]); }
+            } // inner for loop
+          } // end if
+        } // end outer for loop
+        var parameters = {
+          queryName: scope.newQueryName,
+          userName: "Batman",
+          colArray: colArray,
+          rowArray: rowArray,
+          filterArray: filterArray,
+          queryMDX: scope.mdxQuery,
+          connectionData: {
+            xmlaServer: "http://172.23.238.252:8080/pentaho/Xmla?userid=admin&password=password",
+            dataSource: "Pentaho",
+            catalog: "SampleData",
+            cube: "Quadrant Analysis"
+          }
+        };
+        $http.post('/query/new', {
+          myString: JSON.stringify(parameters)
+        }).success(function(data) {
+          scope.showModalAlert = true;
+          scope.querySaveMessage = data.info;
+          if(data.status=="success")
+          {
+            scope.queryList.push(scope.newQueryName);
+          }
+
+        });
+      }); // end click event
+    } // end link function
+  }; // end return
+}); // end directive
+
+app.directive('toggleList', function() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      element.on('click', function() {
+        $this = $(this).children('span');
+          $this.parent().parent().children('ul.nav-left-ml').toggle(200);
+          var cs = $this.attr("class");
+          if(cs == 'nav-toggle-icon glyphicon glyphicon-chevron-right') {
+            $this.removeClass('glyphicon-chevron-right').addClass('glyphicon-chevron-down');
+          }
+          if(cs == 'nav-toggle-icon glyphicon glyphicon-chevron-down') {
+            $this.removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-right');
+          }
+      });
+    } // end link function
+  }; // end return
+}); // toggleList directive end
