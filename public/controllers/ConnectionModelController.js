@@ -6,6 +6,7 @@ hotChocolate.controller('ConnectionModelController',
     $scope.addConnection = false;
     $scope.newConn = {};
     $scope.DataSourceName = "";
+    $rootScope.connIndex = '0';
     $scope.$watch('DataSourceName', function(newValue, oldValue){
       $rootScope.DataSourceName = newValue;
     });
@@ -21,9 +22,12 @@ hotChocolate.controller('ConnectionModelController',
     $scope.CatalogNames = [];
     $scope.CubeNames = [];
     $scope.dimensions = [];
+    $rootScope.dimensions = [];
     $scope.measures = [];
+    $rootScope.measures = [];
     $scope.getCatalogNames = function(DataSourceName){
       // $rootScope.DataSourceName = DataSourceName;
+      $scope.CubeName = "";
       $scope.CubeNames = [];
       discover.getSource('/'+DataSourceName).then(function(data){
         $scope.CatalogNames = data.data.values;
@@ -54,84 +58,63 @@ hotChocolate.controller('ConnectionModelController',
                             }
       });
     };
-    $scope.getHierarchies = function(parent_unique_name) {
+    $scope.getHierarchies = function(idx) {
       var pathName= "/"+ $scope.DataSourceName +
                     "/" + $scope.CatalogName +
                     "/" + $scope.CubeName +
-                    "/" + parent_unique_name;
+                    "/" + $scope.dimensions[idx].unique_name;
       discover.getDimensions(pathName)
                       .then(function(data){
                          console.log(data.data.values);
-                        var len = $scope.dimensions.length;
-                        for(var i=0; i < len; i++) {
-                          if($scope.dimensions[i].unique_name === parent_unique_name) {
-                            $scope.dimensions[i].children = data.data.values;
-                          }
-                        }
+                         $scope.dimensions[idx].children = data.data.values;
+
             });
-          };
-    $scope.getLevels = function(dim_unique_name, hier_unique_name) {
+    };
+    $scope.getLevels = function(dimIdx, hierIdx) {
         var pathName= "/"+ $scope.DataSourceName +
                       "/" + $scope.CatalogName +
                       "/" + $scope.CubeName +
-                      "/" + dim_unique_name +
-                      "/" + hier_unique_name;
+                      "/" + $scope.dimensions[dimIdx].unique_name +
+                      "/" + $scope.dimensions[dimIdx].children[hierIdx].unique_name;
         discover.getDimensions(pathName)
                         .then(function(data){
                            console.log(data.data.values);
-                           var dim_len = $scope.dimensions.length;
-                           for(var i=0; i < dim_len; i++) {
-                               if($scope.dimensions[i].unique_name === dim_unique_name) {
-                                 var hiers = $scope.dimensions[i].children;
-                                 var hier_len = hiers.length;
-                                 for(var j=0; j < hier_len; j++) {
-                                   if(hiers[j].unique_name === hier_unique_name) {
-                                     hiers[j].children = data.data.values;
-                                   }
-                                 }
-                               }
-                             }
-                           });
-                         };
-    $scope.getMembers = function(dim_unique_name, hier_unique_name, level_unique_name) {
+                           $scope.dimensions[dimIdx].children[hierIdx].children = data.data.values;
+                        });
+    };
+    $scope.getMembers = function(dimIdx, hierIdx, levelIdx) {
       var pathName= "/"+ $scope.DataSourceName +
                     "/" + $scope.CatalogName +
                     "/" + $scope.CubeName +
-                    "/" + dim_unique_name +
-                    "/" + hier_unique_name+
-                    "/" + level_unique_name;
+                    "/" + $scope.dimensions[dimIdx].unique_name +
+                    "/" + $scope.dimensions[dimIdx].children[hierIdx].unique_name +
+                    "/" + $scope.dimensions[dimIdx].children[hierIdx].children[levelIdx].unique_name;
       discover.getDimensions(pathName)
                       .then(function(data){
                          console.log(data.data.values);
-                         var dim_len = $scope.dimensions.length;
-                         for(var i=0; i < dim_len; i++) {
-                            if($scope.dimensions[i].unique_name === dim_unique_name) {
-                              var hiers = $scope.dimensions[i].children;
-                              var hier_len = hiers.length;
-                              for(var j=0; j < hier_len; j++) {
-                                if(hiers[j].unique_name === hier_unique_name) {
-                                  var levels = hiers[j].children;
-                                  var level_len = levels.length;
-                                  for(var k=0; k < level_len; k++) {
-                                    if(levels[k].unique_name === level_unique_name) {
-                                      levels[k].children = data.data.values;
-                                      for(var l=0; l < levels[k].children.length; l++) {
-                                        levels[k].children[l].isMember = "yes";
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                         });
-                       };
+                         var members = data.data.values;
+                         for(var i=0, len = members.length; i < len; i++) { members[i].isMember = "yes"; }
+                         $scope.dimensions[dimIdx].children[hierIdx].children[levelIdx].children = members;
+                       });
+    };
+
+    $scope.$on('retrieveQueryEvent', function(event, data) {
+      $scope.getCatalogNames(data.dataSource);
+      $scope.getCubeNames(data.dataSource, data.catalog);
+      $scope.DataSourceName =  data.dataSource;
+      $scope.CatalogName =  data.catalog;
+      $scope.CubeName = data.cube;
+
+      $scope.getChildren(data.dataSource, data.catalog, data.cube);
+    });
+
     $scope.open = function(){
       var response = getAvailableConnections.availableConnections();
       response.then(function(data) {
         $scope.availableConnections = data.data;
         var modalInstance = $uibModal.open({
            animation: $scope.animationsEnabled,
+           windowClass: "modal fade in",
            templateUrl: 'serverCredentials.html',
            controller: 'ModalInstanceCtrl',
            resolve: {
@@ -147,8 +130,13 @@ hotChocolate.controller('ConnectionModelController',
            }
          });
          modalInstance.result.then(function (DataSourceNames) {
+           $scope.DataSourceName = "";
+           $scope.CatalogName = "";
+           $scope.CubeName = "";
            $scope.CatalogNames = [];
            $scope.CubeNames = [];
+           $scope.dimensions = [];
+           $scope.measures = [];
            $scope.DataSourceNames = DataSourceNames;
          });
        });
@@ -158,22 +146,24 @@ hotChocolate.controller('ConnectionModelController',
      };
    });
 
-
-
 hotChocolate.controller('ModalInstanceCtrl',
-    function ($scope, $uibModalInstance, availableConnections, addNewConnection, saveConnection, discover)
+    function ($scope, $rootScope, $uibModalInstance, availableConnections, addNewConnection, saveConnection, discover)
     {
        $scope.availableConnections = availableConnections;
-      //  $scope.DataSourceNames = DataSourceNames;
+       $scope.connIndex = $rootScope.connIndex;
+      //  console.log($scope.connIndex);
+       $scope.$watch('connIndex', function(newValue, oldValue){
+         $rootScope.connIndex = newValue;
+       });
        /*************** What to be done for saving **********/
        $scope.save = function (conn) {
-          if(conn!=="? undefined:undefined ?")
-        {
           saveConnection.saveConnection(conn)
                         .then(function(data){
                           discover.getSource('/').then(function(data){
                             $scope.DataSourceNames = data.data.values;
-                            console.log($scope.DataSourceNames);
+                            // $scope.$parent.changeConnName($scope.connName);
+                            // console.log($scope.DataSourceNames);
+                            $rootScope.connIndex = $scope.connIndex;
                             $uibModalInstance.close($scope.DataSourceNames);
                           }, function(error){
                             $scope.DataSourceNames = [];
@@ -181,7 +171,7 @@ hotChocolate.controller('ModalInstanceCtrl',
                             $uibModalInstance.close();
                           });
                          });
-       }};
+       };
        $scope.cancel = function () {
          $uibModalInstance.dismiss('cancel');
        };
@@ -193,10 +183,14 @@ hotChocolate.controller('ModalInstanceCtrl',
                           .then(function(){
                             discover.getSource('/').then(function(data){
                               $scope.DataSourceNames = data.data.values;
-                              console.log($scope.DataSourceNames);
+                              // console.log($scope.DataSourceNames);
+                              $rootScope.connIndex = $scope.availableConnections.length+'';
+                              console.log("ok"+$scope.availableConnections.length);
                               $uibModalInstance.close($scope.DataSourceNames);
                             }, function(error){
                               $scope.DataSourceNames = [];
+                              console.log("err"+$scope.availableConnections.length);
+                              $rootScope.connIndex = $scope.availableConnections.length+'';
                               console.log(error);
                               $uibModalInstance.close();
                             });
