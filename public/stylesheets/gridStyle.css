@@ -1,0 +1,32 @@
+div#section_result, div#section_result div#topDiv, div#section_result div#bottomDiv {
+  float: left;
+}
+div#section_result th,div#section_result td{
+  padding: 10px;
+  text-align: center
+}
+div#section_result table, div#section_result th,div#section_result td {
+  border: 1px solid #9E8686;
+  border-collapse: collapse;
+}
+div#section_result div#topLeft, div#section_result div#bottomLeft {
+  float: left;
+  clear:both;
+}
+div#section_result div#topLeft {
+  overflow: hidden;
+}
+div#section_result div#topRight {
+  float: left;
+  overflow-x: hidden;
+}
+div#section_result div#bottomLeft {
+  overflow-y: hidden;
+}
+div#section_result div#bottomRight {
+  float: left;
+  overflow-y: auto;
+  margin-right: 17px;
+  overflow-x: auto;
+  margin-bottom: 17px;
+}
