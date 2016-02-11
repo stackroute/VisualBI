@@ -139,8 +139,6 @@ span.nav-toggle-icon{
 
 #content-wrapper {
   height: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
   padding: 5px 15px 15px;
 }
 
@@ -176,26 +174,6 @@ li.placeholder {
   background-color: #fff !important;
   color: #808080 !important;
   font-style: italic;
-}
-
-.section_result {
-  margin-top: 30px;
-}
-
-/*#dataTable {
-  width: 100%;
-}*/
-table{
-  margin: auto;
-}
-table,  th,  td{
-  border: 1px solid black;
-  border-collapse: collapse;
-  text-align: center;
-}
-
- th, td{
-  padding: 10px;
 }
 
 #right-menu {
@@ -414,6 +392,12 @@ div.logout {
 }*/
 .selectWidget, .addWidget{
   height: 220px;
+}
+
+/* Fixing grid size */
+div#tableDiv {
+  width: 95%;
+  height : 400px;
 }
 /*************************Avoiding templates from loading****************************/
 [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
